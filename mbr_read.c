@@ -13,7 +13,7 @@
 
 unsigned char sector[512];
 
-struct pt {
+struct pte {
 	unsigned char status;
 	unsigned char first_head;
 	unsigned char first_sector;
@@ -26,14 +26,17 @@ struct pt {
 	unsigned int  size; /*in sectors*/
 };
 
+struct pt{
+	struct pte e[4];
+};
+
 struct pt* read_pt(const char* path){
 	int fd=-1;
 	int a;
-	unsigned char* sector;
-	fd=open(path,O_RDONLY);
+	fd=open(path,O_RDONLY|O_LARGEFILE|O_NONBLOCK);
 	if(fd==-1) return NULL;
-	printf("ok1");
-	a=read(fd,sector,512);
+	printf("ok1,%d\n",fd);
+	a=read(fd,(void*)sector,512);
 	if(a!=SECTOR_SIZE){
 		goto bad;
 	}
@@ -49,12 +52,11 @@ struct pt* read_pt(const char* path){
 		return NULL;
 }
 
-void print_pt(struct pt* p){
-/*print a single pt entry*/
-	int c;
-	for(c=0;c<sizeof(struct pt);c++){
-		printf ("%X ",((unsigned char*)p)[c]);
-	}
+void print_pt(struct pte* p){
+//	int c;
+//	for(c=0;c<sizeof(struct pt);c++){
+//		printf ("%X ",((unsigned char*)p)[c]);
+//	}
 	printf("\nstatus=%x\nHSC(first-last)=(%x,%x,%x - %x,%x, %x)\ntype=%x,\nLBA_START=%x, LENGTH=%x\n",p->status,p->first_head,p->first_sector,p->first_cylinder,p->last_head,p->last_sector,p->last_cylinder,p->partition,p->LBA,p->size);
 }
 
@@ -70,7 +72,7 @@ int main(int argc, char* argv[]){
 		printf ("%X ",((unsigned char*)pt)[c]);
 
 	for(c=0;c<4;c++){
-		print_pt(pt+c);
+		print_pt(pt->e+c);
 		printf("------------\n");
 	}
 
