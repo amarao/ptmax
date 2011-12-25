@@ -1,0 +1,24 @@
+ptmax - maximize partition in partition table.
+
+Anyone, who tried to resize partition with LVM's PV inside do know that felling: What the hell, we dealing with 64-bytes 35-years old fixed size structure with bunch of ints and still CAN NOT JUST RESIZE partiton.
+
+All utilities looking grim. Fdisk allows us to do this, but with 'DELETE and CREATE' (if you miss numbers, you are fckd up), parted saying to don't know what to do with LVM partition and so on.
+
+When we has an 'old plain spinning drive' with parition, we can say: 'think before creating'. Because metallic (glass?) hard drives don't scale itself.
+
+But now we living in the world of virtual machines, iscsi, LVM, MD and many others way to 'change disk size in 2 clicks'. And what hell you will do with changed drive and partition talbe on it?
+
+Yep. This utility partially solve problem. It takes parition name (/dev/sda1, /dev/xvda2 and so on) and trying to maximize partition. Only 4 bytes in partition table, nothing more. After that you can say pvreze, or resize2fs, or any other command you want.
+
+Again, usage:
+
+ptmax /dev/sda3
+
+That's all.
+
+It pretty caution not to do bad things, so it will max partition size only if PT is sane (no errors) and there is a free space after partition. It will not move partitions.
+
+... And it does not suppports CHS, so don't try to play with <32Mb paritions.
+
+That's all.
+
