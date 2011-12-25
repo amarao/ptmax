@@ -216,6 +216,10 @@ int main(int argc, char* argv[])
 	char* dev=get_parent(argv[1]);
 	unsigned int pt_num=get_num(argv[1]);
 	unsigned int new_size;
+	if(!dev){
+		printf("unable to get parent device (use /dev/xx1 instead /dev/xx)\n");
+		exit(-1);
+	}
 	if (!read_device(dev)){
 		printf("unable to read device\n");
 		exit(-1);
