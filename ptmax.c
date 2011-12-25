@@ -44,7 +44,7 @@ int is_pt()
 int read_device(const char* path)
 {
 	pt_fd=open(path,O_RDWR|O_LARGEFILE|O_NONBLOCK); 
-	/*non-block for accessing pt under mounted fs, we can do this, because we don't remove, move or shring partitions*/
+	/*non-block: we can do this, because we don't remove, move or shrinking partitions*/
 	if(pt_fd==-1) {
 		printf("failing to open device %s\n",path);
 		return 0;
@@ -64,6 +64,17 @@ int read_device(const char* path)
 	return 1;
 }
 
+int write_device(){
+	if(pt_fd==-1)
+		return 0;
+	if(write(pt_fd,MBR,sect_size)!=sect_size){
+		printf("error writing 1st sector (someone screwed, I don't know what happens with your device)\n");
+		exit(-1);
+	}
+	printf("write successfull\n");
+	close(pt_fd);
+}
+
 
 /*snached from fdisk code*/
 static unsigned int
@@ -81,6 +92,21 @@ void read_pte(int num)
         p[num].partition=MBR[PT_OFFSET+PTE_SIZE*num+4];
 	p[num].LBA=read4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+8);
         p[num].size=read4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+0xC); /*in sectors*/
+}
+
+static void store4_little_endian(unsigned char *cp, unsigned int val) {
+        cp[0] = (val & 0xff);
+        cp[1] = ((val >> 8) & 0xff);
+        cp[2] = ((val >> 16) & 0xff);
+        cp[3] = ((val >> 24) & 0xff);
+}
+
+
+
+void write_pte(int num)
+{
+/*hack - we need to change only size field*/
+	store4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+0xC,p[num].size);
 }
 
 int read_pt(){
@@ -104,7 +130,7 @@ void print_pt()
 
 char* get_parent(const char* path)
 {
-/*we supports only for pirmary partitions*/
+/*we supports only for pirmary partitions, feel free to add more*/
 	int l=strlen(path);
 	char *newpath;
 	if (path[l-1]<'1' || path[l-1] >'4') 
@@ -131,9 +157,9 @@ int is_fine(int num)
 			continue;
 		if(! is_valid(c))
 			continue;
-		if(p[c].LBA < p[num].LBA && p[c].LBA + p[c].size > p[num].LBA) /*validating p[num] is starting in the middle of the other PT*/
+		if(p[c].LBA < p[num].LBA && p[c].LBA + p[c].size > p[num].LBA) /*validating p[num] is starting in the middle of the other patition*/
 			return 0;
-		if(p[c].LBA < p[num].LBA + p[num].size && p[c].LBA > p[num].LBA) /*other PT is starting in the middle of p[num]*/
+		if(p[c].LBA < p[num].LBA + p[num].size && p[c].LBA > p[num].LBA) /*other paritition is starting in the middle of p[num]*/
 			return 0;	
 	}
 	return 1;
@@ -145,8 +171,8 @@ unsigned int get_max(int num)
 	int c;
 	unsigned int new_size=0;
 	if(p[num].size+p[num].LBA<256*256*256*sect_size||!p[num].size){ 
-		/*I don't want to mess with CHS fields up, so partitions with last sector in 32Mb is NOT SUPPORTED*/
-		printf("Partition is too small. This utility does not support altering of CHS fields, aborting\n");
+		/*I don't want to mess with CHS fields up, so partitions with last sector in the first 32Mb is NOT SUPPORTED*/
+		printf("Partition is too small. This utility does not supports altering of CHS fields, aborting\n");
 		exit(-1);
 	}
 	if (!is_fine(num)){
@@ -159,11 +185,11 @@ unsigned int get_max(int num)
 			if(!is_valid(c))
 				continue;
 			printf("newsize - initial LBA: %u(%i)\n",p[c].LBA,c);
-			new_size=p[c].LBA - p[num].LBA;
+			new_size=p[c].LBA - p[num].LBA; /*we maximizing up to the next parition start*/
 			break;
 		}
 	if (new_size==0)
-		new_size=dev_size - p[num].LBA;
+		new_size=dev_size - p[num].LBA;/*nothing interesing found - trying to grow to the disk end*/
 
 	if(new_size < p[num].size){
 		printf("something wrong, aborting\n");
@@ -208,5 +234,8 @@ int main(int argc, char* argv[])
 		printf("Nowhere to grow, aboring\n");
 		exit(0);
 	}
-	
+	printf("applying changes to parition #%d\n",pt_num);
+	p[pt_num].size=new_size;
+	write_pte(pt_num);
+	write_device();
 }
