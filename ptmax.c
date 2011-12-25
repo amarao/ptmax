@@ -67,11 +67,15 @@ int read_device(const char* path)
 int write_device(){
 	if(pt_fd==-1)
 		return 0;
+	if(lseek(pt_fd,0,SEEK_SET)==-1){
+		printf("error seeking, write aborted\n");
+		exit(-1);
+	}
 	if(write(pt_fd,MBR,sect_size)!=sect_size){
 		printf("error writing 1st sector (someone screwed, I don't know what happens with your device)\n");
 		exit(-1);
 	}
-	printf("write successfull\n");
+	printf("write successfull (%d bytes)\n",sect_size);
 	close(pt_fd);
 }
 
@@ -106,7 +110,9 @@ static void store4_little_endian(unsigned char *cp, unsigned int val) {
 void write_pte(int num)
 {
 /*hack - we need to change only size field*/
+	printf("was %d\n",read4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+0xC));
 	store4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+0xC,p[num].size);
+	printf("now %d\n",read4_little_endian(MBR+PT_OFFSET+PTE_SIZE*num+0xC));
 }
 
 int read_pt(){
