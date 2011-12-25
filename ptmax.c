@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <linux/fs.h>
+#include <errno.h>
 
 #define PT_OFFSET 0x1BE
 #define PTE_SIZE 16
@@ -46,19 +47,19 @@ int read_device(const char* path)
 	pt_fd=open(path,O_RDWR|O_LARGEFILE|O_NONBLOCK); 
 	/*non-block: we can do this, because we don't remove, move or shrinking partitions*/
 	if(pt_fd==-1) {
-		printf("failing to open device %s\n",path);
+		printf("failed to open device %s: %s\n",path,strerror(errno));
 		return 0;
 	}
 	if( ioctl(pt_fd,BLKGETSIZE,&dev_size)==-1 || ioctl(pt_fd,BLKSSZGET,&sect_size) == -1){
-		printf("unable to get device size or sector size, aborting\n");
+		printf("unable to get device size or sector size: %s, aborting\n",strerror(errno));
 		return 0;
 	}
 	assert(dev_size||sect_size);
-	printf("dev_size=%u, sect_size=%u\n",dev_size,sect_size);
+//	printf("dev_size=%u, sect_size=%u\n",dev_size,sect_size);
 	MBR=malloc(sect_size);
 	assert(MBR);
 	if(read(pt_fd,MBR,sect_size)!=sect_size){
-		printf("unable to read 1st sector, aborting\n");
+		printf("unable to read 1st sector: %s, aborting\n",strerror(errno));
 		return 0;
 	}
 	return 1;
@@ -68,14 +69,14 @@ int write_device(){
 	if(pt_fd==-1)
 		return 0;
 	if(lseek(pt_fd,0,SEEK_SET)==-1){
-		printf("error seeking, write aborted\n");
+		printf("error seeking: %s, write aborted\n",strerror(errno));
 		exit(-1);
 	}
 	if(write(pt_fd,MBR,sect_size)!=sect_size){
-		printf("error writing 1st sector (someone screwed, I don't know what happens with your device)\n");
+		printf("error writing 1st sector: %s\n",strerror(errno));
 		exit(-1);
 	}
-	printf("write successfull (%d bytes)\n",sect_size);
+	printf("write successfull (%d bytes)\nReread partition table or reboot to see result\n",sect_size);
 	close(pt_fd);
 }
 
@@ -227,7 +228,6 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 	if (!read_device(dev)){
-		printf("unable to read device\n");
 		exit(-1);
 	}
 	if(!is_pt()){
