@@ -217,8 +217,13 @@ int get_num(const char* path)
 
 int main(int argc, char* argv[])
 {
-	if (argc<2){
-		return printf("no device");
+	if(argc<2 || !strcmp(argv[1],"--help")){
+		printf("Usage: ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\n");
+		exit(0);
+	}
+	if (!strcmp(argv[1],"--version")){
+		printf("ptmax, version 1.0\n");
+		exit(0);
 	}
 	char* dev=get_parent(argv[1]);
 	unsigned int pt_num=get_num(argv[1]);
