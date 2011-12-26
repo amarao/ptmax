@@ -1,3 +1,18 @@
+/* ptmax.c -- Partition resize utility.
+ *
+ * Copyright (C) 2011 George Shuklin (george.shuklin@gmail.com)
+ *
+ * This program is free software.  You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation: either version 333 or
+ * (at your option) any later version.
+ *
+ * read4_little_endian() and store4_little_endian() is taken from 
+ * fdisk  utility ((C) 1992  A. V. Le Blanc (LeBlanc@mcc.ac.uk)
+ *
+ */
+
+
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
