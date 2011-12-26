@@ -4,10 +4,11 @@ Priority: extra
 Maintainer: George Shuklin <george.shuklin@gmail.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.2
-Homepage: https://github.com/amarao/ptmax
-Vcs-Git: git://github.com/amarao/ptmax.git
-Package: ptmax
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://git.debian.org/collab-maint/ptmax.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/ptmax.git;a=summary
 
+Package: ptmax
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: change partition size (without fs resize)
@@ -15,4 +16,3 @@ Description: change partition size (without fs resize)
  to maximal possible size. It pirmary purpose is to allow
  change partition size after block device resize (LVM, MD
  virtual machines disk) without touching the parition content.
-
