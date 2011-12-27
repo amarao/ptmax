@@ -1,24 +1,22 @@
-ptmax - maximize partition in partition table.
+ptmax - maximize partition in partition tableш to include it's trailing unallocated space
 
-Anyone, who tried to resize partition with LVM's PV inside do know that felling: What the hell, we dealing with 64-bytes 35-years old fixed size structure with bunch of ints and still CAN NOT JUST RESIZE partiton.
+Anyone, who have tried to resize a partition with LVM's PV on it do know that felling: What the hell, we are dealing with a 64-bytes 35-years old fixed size structure with bunch of INTs and still CAN NOT JUST RESIZE partiton.
 
-All utilities looking grim. Fdisk allows us to do this, but with 'DELETE and CREATE' (if you miss numbers, you are fckd up), parted saying to don't know what to do with LVM partition and so on.
+All existing utilities looks grim. Fdisk allows us to do this, but with 'DELETE and CREATE' (if you miss numbers, you are fckd up), parted says it don't know how to do with LVM partition and so on.
 
-When we has an 'old plain spinning drive' with parition, we can say: 'think before creating'. Because metallic (glass?) hard drives don't scale itself.
+If we had an 'old plain spinning drive' with misarranged paritions, we can say: 'think before creating'. Because bare metall hard drives don't scale.
 
-But now we living in the world of virtual machines, iscsi, LVM, MD and many others way to 'change disk size in 2 clicks'. And what hell you will do with changed drive and partition talbe on it?
+But now we live in the world of virtual machines, iscsi, LVM, MD which offers way to 'change disk size in 2 clicks'. And what the hell you are supposed to do after drive (block device) size changed, but the partition table is still the same?
 
-Yep. This utility partially solve problem. It takes parition name (/dev/sda1, /dev/xvda2 and so on) and trying to maximize partition. Only 4 bytes in partition table, nothing more. After that you can say pvreze, or resize2fs, or any other command you want.
+Yep. This utility partially solve the problem. It takes parition name (/dev/sda1, /dev/xvda2 and so on) and attemts to maximize partition. Only 4 bytes in partition table (size filed), nothing more. After that you can run pvreze, or resize2fs, or whatever, to reflect the change on a higher level.
 
-Again, usage:
+Usage is pertty simple:
 
 ptmax /dev/sda3
 
 That's all.
 
-It pretty caution not to do bad things, so it will max partition size only if PT is sane (no errors) and there is a free space after partition. It will not move partitions.
+It cautious to avoid doing do bad things, so it will max partition size only if PT is sane  and there is a free space after the targeted partition. It will not move partitions, attempt to use leading unpartitioned space, change the partition number, or alter in any other way the original partitioning schema or data inside partition.
 
-... And it does not suppports CHS, so don't try to play with <32Mb paritions.
-
-That's all.
+Currently there is no support for CHS, LBA only (?), so don't try it on <32Mb partitions.
 
