@@ -153,13 +153,16 @@ void print_pt()
 char* get_parent(const char* path)
 {
 /*we supports only for pirmary partitions, feel free to add more*/
-	int l=strlen(path);
+	int l=strlen(path)-1;
 	char *newpath;
-	if (path[l-1]<'1' || path[l-1] >'4') 
+	if (path[l]<'1' || path[l] >'4') 
 		return NULL;
-	newpath=malloc(l-1);
+	// For /dev/cciss/c0d0p0 we should cut "p0", not only "0"
+        if (strstr(path, "/cciss/")!=NULL && path[l-1]=='p')
+		l--;
+	newpath=malloc(l);
 	assert(newpath);
-	memcpy(newpath,path,l-1);
+	memcpy(newpath,path,l);
 	return newpath;
 	
 }
