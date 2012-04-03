@@ -1,6 +1,6 @@
 /* ptmax.c -- Partition resize utility.
  *
- * Copyright (C) 2011 George Shuklin (george.shuklin@gmail.com)
+ * Copyright (C) 2011-2012 George Shuklin (george.shuklin@gmail.com)
  *
  * This program is free software.  You can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <assert.h>
+#include <string.h>
 #include <fcntl.h>
 #include <linux/fs.h>
 #include <errno.h>
@@ -235,32 +236,49 @@ int get_num(const char* path)
 
 int main(int argc, char* argv[])
 {
+	char *dev;
+        unsigned int pt_num=0xBAD;
+        unsigned int new_size=0;
 	if(argc<2 || !strcmp(argv[1],"--help")){
-		printf("Usage: ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\n");
+		printf("Usage:\n ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\nptmax /dev/xxx -p N (/dev/sda -p 2)");
 		exit(0);
 	}
 	if (!strcmp(argv[1],"--version")){
 		printf("ptmax, version 1.0\n");
 		exit(0);
 	}
-	char* dev=get_parent(argv[1]);
-	unsigned int pt_num=get_num(argv[1]);
-	unsigned int new_size;
-	if(!dev){
-		printf("unable to get parent device (use /dev/xx1 instead /dev/xx)\n");
-		exit(-1);
+ 	if (argc==2) { /*one device case*/
+ 		dev=get_parent(argv[1]);
+		pt_num=get_num(argv[1]);
+		if(!dev){
+			printf("unable to get parent device, retry with /dev/[parent] -p [partition number].\n");
+			exit(-1);
+                }
 	}
+	else if( argc == 4){
+                if (strcmp("-p",argv[2])){
+			printf("3rd argument must be partition number (-p N)\n");
+			exit(-1);
+		}
+		dev=strdup(argv[1]); /*take 1st arg as is*/
+                pt_num=atoi(argv[3]);
+		if(pt_num>3){
+			printf("Bad parition number (allowed range - from 0 to 3)\n");
+			exit(-1);
+		}
+	}else{
+		printf("bad syntax\n, see --help for help\n");
+		exit(-1);
+        }
 	if (!read_device(dev)){
+		printf ("unable to read device\n");
 		exit(-1);
 	}
 	if(!is_pt()){
-		printf("1st sector not an MBR, aborting\n");
+		printf("1st sector is not MBR, aborting\n");
 		exit(-1);
 	}
 	read_pt();
-//	printf("disk size %i sectors\n",dev_size);
-//	printf ("using device %s,partition %i\n",dev,pt_num);
-//	print_pt(pt->e+pt_num);
 	print_pt();
 	new_size=get_max(pt_num);
 	if(new_size==p[pt_num].size){
@@ -272,3 +290,4 @@ int main(int argc, char* argv[])
 	write_pte(pt_num);
 	write_device();
 }
+

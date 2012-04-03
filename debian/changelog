@@ -1,3 +1,10 @@
+ptmax (1.1) unstable; urgency=low
+
+  * Add heuristic for /dev/cciss/c0d0pX devices (datacompboy @ github)
+  * Add generic mechanism to provide separately 'mother' device and partition number
+
+ -- George Shuklin <george.shuklin@gmail.com>  Mon, 02 Apr 2012 20:18:29 +0400
+
 ptmax (1.0) unstable; urgency=low
 
   * Initial Release.
