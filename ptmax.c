@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
         unsigned int pt_num=0xBAD;
         unsigned int new_size=0;
 	if(argc<2 || !strcmp(argv[1],"--help")){
-		printf("Usage:\n ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\nptmax /dev/xxx -p N (/dev/sda -p 2)");
+		printf("Usage:\n ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\nptmax /dev/xxx -p N (/dev/sda -p 2)\n");
 		exit(0);
 	}
 	if (!strcmp(argv[1],"--version")){
