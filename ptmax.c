@@ -12,7 +12,6 @@
  *
  */
 
-
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
@@ -154,19 +153,50 @@ void print_pt()
 
 char* get_parent(const char* path)
 {
-/*we supports only for pirmary partitions, feel free to add more*/
-	int l=strlen(path)-1;
-	char *newpath;
-	if (path[l]<'1' || path[l] >'4') 
-		return NULL;
-	// For /dev/cciss/c0d0p0 we should cut "p0", not only "0"
-        if (strstr(path, "/cciss/")!=NULL && path[l-1]=='p')
-		l--;
-	newpath=malloc(l);
-	assert(newpath);
-	memcpy(newpath,path,l);
-	return newpath;
-	
+    /* try to find parent device name via sysfs */
+    if (strstr(path, "/dev/")==path) {
+        int len=strlen(path)-5;
+        char name[PATH_MAX] = "/sys/class/block/";
+        char *t;
+        const char *p;
+        for(t = name+strlen(name), p = path+5; *p; p++,t++) {
+            if(*p == '/') *t = '!';
+            else *t = *p;
+        }
+        if(readlink(name, name, sizeof(name))>0) {
+            char *suf = name+strlen(name);
+            while(suf>=name && *suf != '/') suf--;
+            if(suf > name) {
+                char *end = suf--;
+                while(suf>=name && *suf != '/') suf--;
+                if(suf > name) {
+                    char * newpath = malloc(5/*"/dev/"*/+(end-suf)+1);
+                    strcpy(newpath, "/dev/");
+                    for(t=newpath+5/*"/dev/"*/, suf++; *suf && *suf!='/'; suf++,t++) {
+                        if(*suf == '!') *t = '/';
+                        else *t = *suf;
+                    }
+                    *t = 0;
+                    return newpath;
+                }
+            }
+        }
+    }
+    /* else try to find parent device using guess */
+    {
+        /*we supports only for pirmary partitions, feel free to add more*/
+        int l=strlen(path)-1;
+        char *newpath;
+        if (path[l]<'1' || path[l] >'4') 
+            return NULL;
+        // For /dev/cciss/c0d0p0 we should cut "p0", not only "0"
+            if (strstr(path, "/cciss/")!=NULL && path[l-1]=='p')
+            l--;
+        newpath=malloc(l);
+        assert(newpath);
+        memcpy(newpath,path,l);
+        return newpath;
+    }
 }
 
 int is_valid(int num)
