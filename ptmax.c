@@ -154,7 +154,7 @@ void print_pt()
 
 char* get_parent(const char* path)
 {
-/*we supports only for pirmary partitions, feel free to add more*/
+/*we support only primary partitions, feel free to add more*/
 	int l=strlen(path)-1;
 	char *newpath;
 	if (path[l]<'1' || path[l] >'4') 
@@ -184,9 +184,9 @@ int is_fine(int num)
 			continue;
 		if(! is_valid(c))
 			continue;
-		if(p[c].LBA < p[num].LBA && p[c].LBA + p[c].size > p[num].LBA) /*validating p[num] is starting in the middle of the other patition*/
+		if(p[c].LBA < p[num].LBA && p[c].LBA + p[c].size > p[num].LBA) /*validating p[num] is starting in the middle of the other partition*/
 			return 0;
-		if(p[c].LBA < p[num].LBA + p[num].size && p[c].LBA > p[num].LBA) /*other paritition is starting in the middle of p[num]*/
+		if(p[c].LBA < p[num].LBA + p[num].size && p[c].LBA > p[num].LBA) /*other partition is starting in the middle of p[num]*/
 			return 0;	
 	}
 	return 1;
@@ -194,11 +194,11 @@ int is_fine(int num)
 
 unsigned int get_max(int num)
 {
-	/*1) validate PT 2) see if there is hole to next partition 3) see if device have free space at the end*/
+	/*1) validate PT 2) see if there is hole to next partition 3) see if device has free space at the end*/
 	int c;
 	unsigned int new_size=0;
 	if(p[num].size+p[num].LBA<256*256*256*sect_size||!p[num].size){ 
-		/*I don't want to mess with CHS fields up, so partitions with last sector in the first 32Mb is NOT SUPPORTED*/
+		/*I don't want to mess with CHS fields up, so partitions with last sector in the first 32Mb are NOT SUPPORTED*/
 		printf("Partition is too small. This utility does not supports altering of CHS fields, aborting\n");
 		exit(-1);
 	}
@@ -212,11 +212,11 @@ unsigned int get_max(int num)
 			if(!is_valid(c))
 				continue;
 			printf("newsize - initial LBA: %u(%i)\n",p[c].LBA,c);
-			new_size=p[c].LBA - p[num].LBA; /*we maximizing up to the next parition start*/
+			new_size=p[c].LBA - p[num].LBA; /*we are maximizing up to the next parition start*/
 			break;
 		}
 	if (new_size==0)
-		new_size=dev_size - p[num].LBA;/*nothing interesing found - trying to grow to the disk end*/
+		new_size=dev_size - p[num].LBA;/*nothing interesting found - trying to grow to the disk end*/
 
 	if(new_size < p[num].size){
 		printf("something wrong, aborting\n");
@@ -228,7 +228,7 @@ unsigned int get_max(int num)
 
 int get_num(const char* path)
 {
-/*we supports only for pirmary partitions*/
+/*we support only primary partitions*/
 	int l=strlen(path);
 	if (path[l-1]<'1' || path[l-1] >'4') 
 		return -1;
@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
 		dev=strdup(argv[1]); /*take 1st arg as is*/
                 pt_num=atoi(argv[3]);
 		if(pt_num>3){
-			printf("Bad parition number (allowed range - from 0 to 3)\n");
+			printf("Bad partition number (allowed range - from 0 to 3)\n");
 			exit(-1);
 		}
 	}else{
@@ -283,10 +283,10 @@ int main(int argc, char* argv[])
 	print_pt();
 	new_size=get_max(pt_num);
 	if(new_size==p[pt_num].size){
-		printf("Nowhere to grow, aboring\n");
+		printf("Nowhere to grow, aborting\n");
 		exit(0);
 	}
-	printf("applying changes to parition #%d\n",pt_num);
+	printf("applying changes to partition #%d\n",pt_num);
 	p[pt_num].size=new_size;
 	write_pte(pt_num);
 	write_device();
