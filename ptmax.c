@@ -241,7 +241,7 @@ int main(int argc, char* argv[])
         unsigned int pt_num=0xBAD;
         unsigned int new_size=0;
 	if(argc<2 || !strcmp(argv[1],"--help")){
-		printf("Usage:\n ptmax /dev/xxxN (f.e. /dev/sda2, /dev/xvdb4, etc)\nptmax /dev/xxx -p N (/dev/sda -p 2)\n");
+		printf("Usage:\n ptmax <partition device>\n ptmax <device> -p <partition>\n\nMaximize a partition in a partition table to include it's trailing unallocated space.\n\n<partition device> - f.e., /dev/sda2, /dev/xvdb4\n          <device> - f.e., /dev/sda\n       <partition> - partition number\n\nExamples:\n # ptmax /dev/sda2\n # ptmax /dev/sda -p 2\n");
 		exit(0);
 	}
 	if (!strcmp(argv[1],"--version")){
